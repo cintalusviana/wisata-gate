@@ -1311,6 +1311,19 @@
                 $chartEntryValues = $chartEntries ?? [];
                 $chartExitValues = $chartExits ?? [];
 
+                // Ubah Collection menjadi array agar fungsi array_* dapat digunakan.
+                if ($chartEntryValues instanceof \\Illuminate\\Support\\Collection) {
+                    $chartEntryValues = $chartEntryValues->values()->all();
+                } else {
+                    $chartEntryValues = (array) $chartEntryValues;
+                }
+
+                if ($chartExitValues instanceof \\Illuminate\\Support\\Collection) {
+                    $chartExitValues = $chartExitValues->values()->all();
+                } else {
+                    $chartExitValues = (array) $chartExitValues;
+                }
+
                 $hours = $chartHours ?? [
                     '07:00',
                     '09:00',
@@ -1419,13 +1432,13 @@
 
                             <div
                                 class="wg-bar wg-bar-in"
-                                style="height:{{ $entryHeight }}%;"
+                                @style(['height' => $entryHeight . '%'])
                                 title="Masuk: {{ $entry }}"
                             ></div>
 
                             <div
                                 class="wg-bar wg-bar-out"
-                                style="height:{{ $exitHeight }}%;"
+                                @style(['height' => $exitHeight . '%'])
                                 title="Keluar: {{ $exit }}"
                             ></div>
 
@@ -1485,6 +1498,13 @@
                 */
 
                 $vehicleTypes = $vehicleTypeCounts ?? [];
+
+                // Data komposisi dapat berupa Collection atau array.
+                if ($vehicleTypes instanceof \\Illuminate\\Support\\Collection) {
+                    $vehicleTypes = $vehicleTypes->all();
+                } else {
+                    $vehicleTypes = (array) $vehicleTypes;
+                }
 
                 arsort($vehicleTypes);
 
@@ -1615,7 +1635,7 @@
 
                             <div
                                 class="wg-type-progress {{ $colorClass }}"
-                                style="width:{{ $width }}%;"
+                                @style(['width' => $width . '%'])
                             ></div>
 
                         </div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -23,36 +24,16 @@ class OfficerController extends Controller
     }
 
     /**
-     * Menyimpan petugas baru.
+     * Menambahkan petugas baru.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'unique:users,email',
-            ],
-            'role' => [
-                'required',
-                Rule::in(['admin', 'petugas']),
-            ],
-            'status' => [
-                'required',
-                Rule::in(['aktif', 'nonaktif']),
-            ],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'role' => ['required', Rule::in(['admin', 'petugas'])],
+            'status' => ['required', Rule::in(['aktif', 'nonaktif'])],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'name.required' => 'Nama petugas wajib diisi.',
             'name.max' => 'Nama petugas maksimal 255 karakter.',
@@ -84,36 +65,22 @@ class OfficerController extends Controller
     /**
      * Memperbarui data petugas.
      */
-    public function update(Request $request, $officer)
+    public function update(Request $request, int $officer)
     {
         $user = User::whereIn('role', ['admin', 'petugas'])
             ->findOrFail($officer);
 
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-            ],
+            'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'email',
+                'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'role' => [
-                'required',
-                Rule::in(['admin', 'petugas']),
-            ],
-            'status' => [
-                'required',
-                Rule::in(['aktif', 'nonaktif']),
-            ],
-            'password' => [
-                'nullable',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
+            'role' => ['required', Rule::in(['admin', 'petugas'])],
+            'status' => ['required', Rule::in(['aktif', 'nonaktif'])],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ], [
             'name.required' => 'Nama petugas wajib diisi.',
             'name.max' => 'Nama petugas maksimal 255 karakter.',
@@ -133,7 +100,6 @@ class OfficerController extends Controller
         $user->role = $validated['role'];
         $user->status = $validated['status'];
 
-        // Password hanya diperbarui jika diisi.
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
@@ -147,30 +113,24 @@ class OfficerController extends Controller
 
     /**
      * Menghapus data petugas.
-     *
-     * Akun yang memiliki riwayat kendaraan atau aktivitas
-     * tidak boleh dihapus agar data historis tetap tersimpan.
      */
-    public function destroy($officer)
+    public function destroy(int $officer)
     {
         $result = DB::transaction(function () use ($officer) {
-
             $user = User::whereIn('role', ['admin', 'petugas'])
                 ->lockForUpdate()
                 ->findOrFail($officer);
 
-            // Mencegah penghapusan akun yang sedang digunakan.
-            if ((int) $user->id === (int) auth()->id()) {
+            // Akun yang sedang digunakan tidak boleh dihapus.
+            if ((int) $user->id === (int) Auth::id()) {
                 return [
                     'success' => false,
                     'message' => 'Akun yang sedang digunakan tidak dapat dihapus.',
                 ];
             }
 
-            // Periksa apakah akun memiliki riwayat kendaraan.
+            // Periksa riwayat kendaraan dan aktivitas.
             $hasGateLogs = $user->gateLogs()->exists();
-
-            // Periksa apakah akun memiliki riwayat aktivitas.
             $hasActivityLogs = $user->activityLogs()->exists();
 
             if ($hasGateLogs || $hasActivityLogs) {
@@ -180,7 +140,6 @@ class OfficerController extends Controller
                 ];
             }
 
-            // Hapus hanya jika tidak memiliki riwayat.
             $user->delete();
 
             return [
@@ -189,14 +148,11 @@ class OfficerController extends Controller
             ];
         });
 
-        if (!$result['success']) {
-            return redirect()
-                ->route('officers.index')
-                ->with('error', $result['message']);
-        }
-
         return redirect()
             ->route('officers.index')
-            ->with('success', $result['message']);
+            ->with(
+                $result['success'] ? 'success' : 'error',
+                $result['message']
+            );
     }
 }

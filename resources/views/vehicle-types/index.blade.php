@@ -1,17 +1,18 @@
+
 @extends('layouts.app')
 
 @section('title', 'Jenis Kendaraan')
 
 @section('content')
 @php
-    use App\Models\GateLog;
-
     $vehicleTypes = $vehicleTypes ?? collect();
+
     $totalTypes = $vehicleTypes->count();
-    $totalInside = GateLog::where('status', 'Di Dalam')->count();
+
+    $totalInside = \App\Models\GateLog::where('status', 'Di Dalam')->count();
 
     $activeTypes = $vehicleTypes->filter(function ($type) {
-        return GateLog::where('status', 'Di Dalam')
+        return \App\Models\GateLog::where('status', 'Di Dalam')
             ->where('vehicle_type', $type->name)
             ->exists();
     })->count();
@@ -24,54 +25,63 @@
         --text: #1f2937;
         --muted: #6b7280;
         --border: #e5e7eb;
-        --surface: #ffffff;
-        font-family: 'Inter', sans-serif;
+        --surface: #fff;
         color: var(--text);
+        font-family: 'Inter', sans-serif;
         width: 100%;
     }
 
-    .vt-page * { box-sizing: border-box; }
+    .vt-page * {
+        box-sizing: border-box;
+    }
 
-    .vt-page .vt-header {
+    .vt-header,
+    .vt-panel-header,
+    .vt-toolbar,
+    .vt-form-heading,
+    .vt-form-footer,
+    .vt-card-top,
+    .vt-metric {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 20px;
-        margin-bottom: 23px;
+        gap: 14px;
     }
 
-    .vt-page .vt-breadcrumb {
+    .vt-header {
+        margin-bottom: 22px;
+    }
+
+    .vt-breadcrumb {
         display: flex;
-        flex-wrap: wrap;
         align-items: center;
         gap: 8px;
-        margin-bottom: 9px;
+        margin-bottom: 8px;
         color: var(--muted);
         font-size: 12px;
     }
 
-    .vt-page .vt-breadcrumb .current {
+    .vt-breadcrumb .current {
         color: var(--primary);
         font-weight: 600;
     }
 
-    .vt-page .vt-title {
+    .vt-title {
         margin: 0;
-        font-size: 26px;
-        line-height: 1.4;
-        font-weight: 750;
-        letter-spacing: -.6px;
         color: var(--text);
+        font-size: 26px;
+        font-weight: 750;
+        letter-spacing: -.5px;
     }
 
-    .vt-page .vt-description {
+    .vt-description {
         margin: 6px 0 0;
-        font-size: 13px;
         color: var(--muted);
+        font-size: 13px;
         line-height: 1.7;
     }
 
-    .vt-page .vt-btn {
+    .vt-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -83,40 +93,40 @@
         font-family: inherit;
         font-size: 12px;
         font-weight: 650;
-        text-decoration: none;
         cursor: pointer;
+        text-decoration: none;
         transition: .2s ease;
     }
 
-    .vt-page .vt-btn-primary {
-        color: #fff;
+    .vt-btn-primary {
         border-color: var(--primary);
         background: var(--primary);
+        color: #fff;
     }
 
-    .vt-page .vt-btn-primary:hover {
-        color: #fff;
+    .vt-btn-primary:hover {
         border-color: var(--primary-hover);
         background: var(--primary-hover);
+        color: #fff;
     }
 
-    .vt-page .vt-btn-secondary {
-        color: #4b5563;
-        background: #fff;
+    .vt-btn-secondary {
+        background: var(--surface);
+        color: var(--text);
     }
 
-    .vt-page .vt-btn-secondary:hover {
+    .vt-btn-secondary:hover {
         background: #f3f4f6;
     }
 
-    .vt-page .vt-summary {
+    .vt-summary {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 15px;
-        margin-bottom: 23px;
+        margin-bottom: 22px;
     }
 
-    .vt-page .vt-stat {
+    .vt-stat {
         display: flex;
         align-items: center;
         gap: 13px;
@@ -128,28 +138,45 @@
         box-shadow: 0 2px 5px rgba(15, 23, 42, .025);
     }
 
-    .vt-page .vt-stat-icon {
+    .vt-stat-icon,
+    .vt-type-icon,
+    .vt-form-icon,
+    .vt-empty-icon {
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        border-radius: 10px;
+    }
+
+    .vt-stat-icon {
         width: 44px;
         height: 44px;
-        border-radius: 10px;
         font-size: 19px;
     }
 
-    .vt-page .orange { background: #fff1e8; color: #ea580c; }
-    .vt-page .blue { background: #eff6ff; color: #2563eb; }
-    .vt-page .green { background: #ecfdf5; color: #059669; }
+    .vt-orange {
+        background: #fff1e8;
+        color: #ea580c;
+    }
 
-    .vt-page .vt-stat-label {
+    .vt-blue {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .vt-green {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .vt-stat-label {
         margin: 0 0 5px;
         color: var(--muted);
         font-size: 12px;
     }
 
-    .vt-page .vt-stat-number {
+    .vt-stat-number {
         margin: 0;
         color: var(--text);
         font-size: 24px;
@@ -157,14 +184,15 @@
         line-height: 1.2;
     }
 
-    .vt-page .vt-stat-note {
+    .vt-stat-note {
         display: block;
         margin-top: 5px;
         color: var(--muted);
         font-size: 11px;
     }
 
-    .vt-page .vt-panel {
+    .vt-panel,
+    .vt-form-panel {
         overflow: hidden;
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -172,120 +200,79 @@
         box-shadow: 0 2px 6px rgba(15, 23, 42, .025);
     }
 
-    .vt-page .vt-panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        padding: 19px 21px;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .vt-page .vt-panel-title {
-        margin: 0;
-        color: var(--text);
-        font-size: 15px;
-        font-weight: 700;
-    }
-
-    .vt-page .vt-panel-subtitle {
-        margin: 5px 0 0;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.6;
-    }
-
-    .vt-page .vt-count {
-        padding: 6px 9px;
-        border-radius: 7px;
-        background: #fff1e8;
-        color: #c2410c;
-        font-size: 11px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    /* FORM TAMBAH DAN EDIT */
-    .vt-page .vt-form-panel {
+    .vt-form-panel {
         display: none;
-        overflow: hidden;
-        margin-bottom: 23px;
-        border: 1px solid #fed7aa;
-        border-radius: 12px;
-        background: var(--surface);
-        box-shadow: 0 4px 15px rgba(15, 23, 42, .04);
+        margin-bottom: 22px;
+        border-color: #fed7aa;
     }
 
-    .vt-page .vt-form-panel.show {
+    .vt-form-panel.show {
         display: block;
         animation: vtFormAppear .22s ease-out;
     }
 
     @keyframes vtFormAppear {
-        from { opacity: 0; transform: translateY(-6px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    .vt-page .vt-form-heading {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+    .vt-form-heading {
+        justify-content: flex-start;
         padding: 18px 21px;
         border-bottom: 1px solid var(--border);
         background: #fffaf5;
     }
 
-    .vt-page .vt-form-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .vt-form-icon {
         width: 43px;
         height: 43px;
-        flex-shrink: 0;
-        border-radius: 10px;
         background: #ffedd5;
         color: var(--primary);
         font-size: 19px;
     }
 
-    .vt-page .vt-form-title {
+    .vt-form-title {
         margin: 0;
         color: #9a3412;
         font-size: 16px;
         font-weight: 750;
     }
 
-    .vt-page .vt-form-subtitle {
+    .vt-form-subtitle {
         margin: 4px 0 0;
         color: #9a3412;
         font-size: 12px;
-        line-height: 1.6;
     }
 
-    .vt-page .vt-form-body {
+    .vt-form-body {
         padding: 22px 21px;
     }
 
-    .vt-page .vt-section-title {
+    .vt-section-title {
         margin: 0 0 6px;
+        color: var(--text);
         font-size: 14px;
         font-weight: 700;
-        color: var(--text);
     }
 
-    .vt-page .vt-section-description {
+    .vt-section-description {
         margin: 0 0 20px;
         color: var(--muted);
         font-size: 12px;
         line-height: 1.7;
     }
 
-    .vt-page .vt-form-group {
+    .vt-form-group {
         max-width: 650px;
-        margin-bottom: 5px;
     }
 
-    .vt-page .vt-label {
+    .vt-label {
         display: block;
         margin-bottom: 8px;
         color: var(--text);
@@ -293,13 +280,13 @@
         font-weight: 650;
     }
 
-    .vt-page .vt-required { color: #dc2626; }
+    .vt-required {
+        color: #dc2626;
+    }
 
-    .vt-page .vt-input {
-        display: block;
+    .vt-input,
+    .vt-search input {
         width: 100%;
-        min-height: 43px;
-        padding: 10px 13px;
         border: 1px solid #d1d5db;
         border-radius: 8px;
         outline: none;
@@ -310,14 +297,23 @@
         transition: .2s ease;
     }
 
-    .vt-page .vt-input::placeholder { color: #9ca3af; }
+    .vt-input {
+        min-height: 43px;
+        padding: 10px 13px;
+    }
 
-    .vt-page .vt-input:focus {
+    .vt-input:focus,
+    .vt-search input:focus {
         border-color: #fb923c;
         box-shadow: 0 0 0 3px rgba(234, 88, 12, .1);
     }
 
-    .vt-page .vt-field-hint {
+    .vt-input::placeholder,
+    .vt-search input::placeholder {
+        color: #9ca3af;
+    }
+
+    .vt-field-hint {
         display: block;
         margin-top: 7px;
         color: var(--muted);
@@ -325,32 +321,53 @@
         line-height: 1.7;
     }
 
-    .vt-page .vt-form-footer {
-        display: flex;
-        align-items: center;
+    .vt-form-footer {
         justify-content: flex-end;
-        gap: 9px;
         padding: 15px 21px;
         border-top: 1px solid var(--border);
         background: #fafafa;
     }
 
-    .vt-page .vt-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
+    .vt-panel-header {
+        padding: 19px 21px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .vt-panel-title {
+        margin: 0;
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .vt-panel-subtitle {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .vt-count {
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #fff1e8;
+        color: #c2410c;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .vt-toolbar {
         padding: 15px 21px;
         border-bottom: 1px solid var(--border);
     }
 
-    .vt-page .vt-search {
+    .vt-search {
         position: relative;
         width: 100%;
         max-width: 330px;
     }
 
-    .vt-page .vt-search i {
+    .vt-search i {
         position: absolute;
         top: 50%;
         left: 13px;
@@ -359,72 +376,48 @@
         pointer-events: none;
     }
 
-    .vt-page .vt-search input {
-        width: 100%;
+    .vt-search input {
         height: 39px;
         padding: 0 12px 0 36px;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        outline: none;
-        background: var(--surface);
-        color: var(--text);
-        font-family: inherit;
         font-size: 12px;
     }
 
-    .vt-page .vt-search input:focus {
-        border-color: #fb923c;
-        box-shadow: 0 0 0 3px rgba(234, 88, 12, .08);
-    }
-
-    .vt-page .vt-result {
+    .vt-result {
         color: var(--muted);
         font-size: 12px;
     }
 
-    .vt-page .vt-grid {
+    .vt-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 15px;
         padding: 21px;
     }
 
-    .vt-page .vt-card {
+    .vt-card {
         min-width: 0;
         padding: 17px;
         border: 1px solid var(--border);
         border-radius: 10px;
         background: var(--surface);
-        transition: border-color .2s, box-shadow .2s, transform .2s;
+        transition: .2s ease;
     }
 
-    .vt-page .vt-card:hover {
+    .vt-card:hover {
         border-color: #fed7aa;
         box-shadow: 0 5px 15px rgba(15, 23, 42, .04);
         transform: translateY(-2px);
     }
 
-    .vt-page .vt-card-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .vt-page .vt-type-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .vt-type-icon {
         width: 44px;
         height: 44px;
-        flex-shrink: 0;
-        border-radius: 10px;
         background: #fff1e8;
         color: var(--primary);
         font-size: 20px;
     }
 
-    .vt-page .vt-status {
+    .vt-status {
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -437,14 +430,14 @@
         font-weight: 650;
     }
 
-    .vt-page .vt-dot {
+    .vt-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
         background: #10b981;
     }
 
-    .vt-page .vt-type-name {
+    .vt-type-name {
         margin: 16px 0 5px;
         overflow-wrap: anywhere;
         color: var(--text);
@@ -452,7 +445,7 @@
         font-weight: 700;
     }
 
-    .vt-page .vt-type-description {
+    .vt-type-description {
         min-height: 36px;
         margin: 0;
         color: var(--muted);
@@ -460,37 +453,30 @@
         line-height: 1.7;
     }
 
-    .vt-page .vt-divider {
+    .vt-divider {
         height: 1px;
         margin: 15px 0 12px;
         background: var(--border);
     }
 
-    .vt-page .vt-metric {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .vt-page .vt-metric-label {
+    .vt-metric-label {
         color: var(--muted);
         font-size: 11px;
     }
 
-    .vt-page .vt-metric-value {
+    .vt-metric-value {
         color: var(--text);
         font-size: 15px;
         font-weight: 750;
     }
 
-    .vt-page .vt-actions {
+    .vt-actions {
         display: flex;
         gap: 8px;
         margin-top: 16px;
     }
 
-    .vt-page .vt-action {
+    .vt-action {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -509,62 +495,62 @@
         transition: .2s ease;
     }
 
-    .vt-page .vt-action-edit { flex: 1; }
+    .vt-action-edit {
+        flex: 1;
+    }
 
-    .vt-page .vt-action-edit:hover {
+    .vt-action-edit:hover {
         border-color: #fdba74;
         background: #fff7ed;
         color: #c2410c;
     }
 
-    .vt-page .vt-action-delete {
+    .vt-action-delete {
         width: 35px;
         padding: 0;
         color: #dc2626;
     }
 
-    .vt-page .vt-action-delete:hover {
+    .vt-action-delete:hover {
         border-color: #fecaca;
         background: #fef2f2;
     }
 
-    .vt-page .vt-empty {
+    .vt-empty {
         grid-column: 1 / -1;
         padding: 40px 20px;
         text-align: center;
     }
 
-    .vt-page .vt-empty-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .vt-empty-icon {
         width: 54px;
         height: 54px;
         margin: 0 auto 14px;
-        border-radius: 13px;
         background: #fff1e8;
         color: var(--primary);
         font-size: 23px;
     }
 
-    .vt-page .vt-empty h3 {
+    .vt-empty h3 {
         margin: 0 0 7px;
         color: var(--text);
         font-size: 15px;
         font-weight: 700;
     }
 
-    .vt-page .vt-empty p {
-        margin: 0 auto 15px;
+    .vt-empty p {
         max-width: 350px;
+        margin: 0 auto 15px;
         color: var(--muted);
         font-size: 12px;
         line-height: 1.7;
     }
 
-    .vt-page .vt-hidden { display: none !important; }
+    .vt-hidden {
+        display: none !important;
+    }
 
-    .vt-page .vt-note {
+    .vt-note {
         display: flex;
         align-items: flex-start;
         gap: 10px;
@@ -578,9 +564,7 @@
         line-height: 1.7;
     }
 
-    .vt-page .vt-note i { font-size: 15px; }
-
-    .vt-page .vt-alert {
+    .vt-alert {
         margin-bottom: 16px;
         padding: 12px 15px;
         border: 1px solid #bbf7d0;
@@ -590,57 +574,75 @@
         font-size: 12px;
     }
 
-    .vt-page .vt-alert.error {
+    .vt-alert.error {
         border-color: #fecaca;
         background: #fef2f2;
         color: #991b1b;
     }
 
-    .vt-page .vt-validation {
+    .vt-validation {
         margin-top: 7px;
         color: #dc2626;
         font-size: 11px;
     }
 
     @media (max-width: 1050px) {
-        .vt-page .vt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .vt-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 
     @media (max-width: 700px) {
-        .vt-page .vt-header {
+        .vt-header {
             align-items: stretch;
             flex-direction: column;
         }
 
-        .vt-page .vt-header .vt-btn { width: 100%; }
+        .vt-header .vt-btn {
+            width: 100%;
+        }
 
-        .vt-page .vt-summary { grid-template-columns: 1fr; gap: 10px; }
+        .vt-summary {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
 
-        .vt-page .vt-stat { padding: 14px; }
+        .vt-stat {
+            padding: 14px;
+        }
 
-        .vt-page .vt-panel-header { padding: 16px; }
+        .vt-panel-header {
+            padding: 16px;
+        }
 
-        .vt-page .vt-toolbar {
+        .vt-toolbar {
             align-items: stretch;
             flex-direction: column;
             padding: 14px 16px;
         }
 
-        .vt-page .vt-search { max-width: none; }
-
-        .vt-page .vt-grid {
-            grid-template-columns: 1fr;
-            padding: 14px;
-            gap: 12px;
+        .vt-search {
+            max-width: none;
         }
 
-        .vt-page .vt-form-heading { padding: 16px; }
+        .vt-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 14px;
+        }
 
-        .vt-page .vt-form-body { padding: 18px 16px; }
+        .vt-form-heading,
+        .vt-form-body {
+            padding: 16px;
+        }
 
-        .vt-page .vt-form-footer { padding: 13px 16px; }
+        .vt-form-footer {
+            padding: 13px 16px;
+        }
 
-        .vt-page .vt-form-footer .vt-btn { flex: 1; }
+        .vt-form-footer .vt-btn {
+            flex: 1;
+        }
     }
 
     [data-bs-theme="dark"] .vt-page,
@@ -652,38 +654,42 @@
         --surface: #1f2937;
     }
 
-    [data-bs-theme="dark"] .vt-page .vt-form-heading,
-    .dark-mode .vt-page .vt-form-heading,
-    body.dark .vt-page .vt-form-heading {
+    [data-bs-theme="dark"] .vt-form-heading,
+    .dark-mode .vt-form-heading,
+    body.dark .vt-form-heading {
         background: #292524;
     }
 
-    [data-bs-theme="dark"] .vt-page .vt-form-title,
-    [data-bs-theme="dark"] .vt-page .vt-form-subtitle,
-    .dark-mode .vt-page .vt-form-title,
-    .dark-mode .vt-page .vt-form-subtitle,
-    body.dark .vt-page .vt-form-title,
-    body.dark .vt-page .vt-form-subtitle {
+    [data-bs-theme="dark"] .vt-form-title,
+    [data-bs-theme="dark"] .vt-form-subtitle,
+    .dark-mode .vt-form-title,
+    .dark-mode .vt-form-subtitle,
+    body.dark .vt-form-title,
+    body.dark .vt-form-subtitle {
         color: #fed7aa;
     }
 
-    [data-bs-theme="dark"] .vt-page .vt-form-footer,
-    .dark-mode .vt-page .vt-form-footer,
-    body.dark .vt-page .vt-form-footer {
+    [data-bs-theme="dark"] .vt-form-footer,
+    .dark-mode .vt-form-footer,
+    body.dark .vt-form-footer {
         background: #111827;
     }
 
-    [data-bs-theme="dark"] .vt-page .vt-note,
-    .dark-mode .vt-page .vt-note,
-    body.dark .vt-page .vt-note {
+    [data-bs-theme="dark"] .vt-note,
+    .dark-mode .vt-note,
+    body.dark .vt-note {
         border-color: #7c2d12;
         background: #431407;
         color: #fed7aa;
     }
 </style>
 
-<div class="vt-page">
-
+<div
+    class="vt-page"
+    id="vehicleTypePage"
+    data-store-url="{{ route('vehicle-types.store') }}"
+    data-has-errors="{{ $errors->any() ? '1' : '0' }}"
+>
     {{-- HEADER --}}
     <div class="vt-header">
         <div>
@@ -732,7 +738,7 @@
     {{-- RINGKASAN --}}
     <div class="vt-summary">
         <div class="vt-stat">
-            <div class="vt-stat-icon orange">
+            <div class="vt-stat-icon vt-orange">
                 <i class="bi bi-tags"></i>
             </div>
             <div>
@@ -743,7 +749,7 @@
         </div>
 
         <div class="vt-stat">
-            <div class="vt-stat-icon blue">
+            <div class="vt-stat-icon vt-blue">
                 <i class="bi bi-car-front"></i>
             </div>
             <div>
@@ -754,7 +760,7 @@
         </div>
 
         <div class="vt-stat">
-            <div class="vt-stat-icon green">
+            <div class="vt-stat-icon vt-green">
                 <i class="bi bi-check2-circle"></i>
             </div>
             <div>
@@ -765,7 +771,7 @@
         </div>
     </div>
 
-    {{-- FORM INLINE: TAMBAH DAN EDIT --}}
+    {{-- FORM TAMBAH DAN EDIT --}}
     <section class="vt-form-panel" id="vehicleTypeFormPanel">
         <div class="vt-form-heading">
             <div class="vt-form-icon" id="vehicleTypeFormIcon">
@@ -882,7 +888,7 @@
         <div class="vt-grid" id="vehicleTypeGrid">
             @forelse($vehicleTypes as $vehicleType)
                 @php
-                    $currentCount = GateLog::where('status', 'Di Dalam')
+                    $currentCount = \App\Models\GateLog::where('status', 'Di Dalam')
                         ->where('vehicle_type', $vehicleType->name)
                         ->count();
 
@@ -940,7 +946,6 @@
                         <button
                             type="button"
                             class="vt-action vt-action-edit js-edit-type"
-                            data-id="{{ $vehicleType->id }}"
                             data-name="{{ $vehicleType->name }}"
                             data-update-url="{{ route('vehicle-types.update', $vehicleType->id) }}"
                         >
@@ -1000,15 +1005,19 @@
             yang berstatus Di Dalam.
         </span>
     </div>
-
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const page = document.getElementById('vehicleTypePage');
+
+    if (!page) return;
+
     const panel = document.getElementById('vehicleTypeFormPanel');
     const form = document.getElementById('vehicleTypeForm');
     const methodInput = document.getElementById('vehicleTypeMethod');
     const nameInput = document.getElementById('vehicleTypeName');
+
     const title = document.getElementById('vehicleTypeFormTitle');
     const subtitle = document.getElementById('vehicleTypeFormSubtitle');
     const icon = document.getElementById('vehicleTypeFormIcon');
@@ -1023,8 +1032,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const noResults = document.getElementById('vehicleTypeNoResults');
     const grid = document.getElementById('vehicleTypeGrid');
 
-    const storeUrl = @json(route('vehicle-types.store'));
-    const cards = grid ? Array.from(grid.querySelectorAll('.vt-card')) : [];
+    const storeUrl = page.dataset.storeUrl;
+    const hasErrors = page.dataset.hasErrors === '1';
+
+    const cards = grid
+        ? Array.from(grid.querySelectorAll('.vt-card'))
+        : [];
 
     function openForm(mode, data = {}) {
         panel.classList.add('show');
@@ -1042,12 +1055,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 '<i class="bi bi-check-lg"></i> Simpan Perubahan';
         } else {
             title.textContent = 'Tambah Jenis Kendaraan';
-            subtitle.textContent = 'Masukkan nama kategori kendaraan yang akan didaftarkan.';
+            subtitle.textContent =
+                'Masukkan nama kategori kendaraan yang akan didaftarkan.';
+
             icon.innerHTML = '<i class="bi bi-plus-lg"></i>';
 
             form.action = storeUrl;
             methodInput.disabled = true;
-            nameInput.value = '';
+
+            if (!data.preserve) {
+                nameInput.value = '';
+            }
 
             saveButton.innerHTML =
                 '<i class="bi bi-check-lg"></i> Simpan Data';
@@ -1061,15 +1079,19 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         window.setTimeout(function () {
-            nameInput.focus({ preventScroll: true });
+            nameInput.focus({
+                preventScroll: true
+            });
         }, 250);
     }
 
     function closeForm() {
         panel.classList.remove('show');
         form.reset();
+
         form.action = storeUrl;
         methodInput.disabled = true;
+
         nameInput.classList.remove('is-invalid');
     }
 
@@ -1092,7 +1114,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.js-edit-type').forEach(function (button) {
         button.addEventListener('click', function () {
             openForm('edit', {
-                id: button.dataset.id,
                 name: button.dataset.name,
                 updateUrl: button.dataset.updateUrl
             });
@@ -1111,7 +1132,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             card.classList.toggle('vt-hidden', !matches);
 
-            if (matches) visible++;
+            if (matches) {
+                visible++;
+            }
         });
 
         if (noResults) {
@@ -1130,10 +1153,12 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.addEventListener('input', filterTypes);
     }
 
-    // Jika validasi Laravel gagal, tampilkan kembali form dengan data sebelumnya.
-    @if($errors->any())
-        openForm('create');
-    @endif
+    // Tampilkan kembali form jika validasi Laravel gagal.
+    if (hasErrors) {
+        openForm('create', {
+            preserve: true
+        });
+    }
 });
 </script>
 @endsection

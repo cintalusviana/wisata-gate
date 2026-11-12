@@ -3,7 +3,6 @@
 @section('title', 'Riwayat Kendaraan')
 
 @section('content')
-
 @php
     $historyTotal = $histories->count();
     $showAllHistory = request()->boolean('all');
@@ -12,15 +11,14 @@
 <style>
     .history-page {
         --orange: #ea580c;
-        --orange-light: #fff7ed;
         --blue: #2563eb;
         --green: #16a34a;
         --red: #dc2626;
         --border: #e5e7eb;
         --muted: #6b7280;
         --text: #111827;
-        font-family: 'Inter', sans-serif;
         color: var(--text);
+        font-family: 'Inter', sans-serif;
     }
 
     .history-page *,
@@ -33,35 +31,41 @@
         display: none !important;
     }
 
-    .history-header {
+    .history-header,
+    .history-card-header {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 20px;
+        gap: 16px;
+    }
+
+    .history-header {
+        align-items: flex-start;
         margin-bottom: 24px;
     }
 
     .history-header h1 {
         margin: 0 0 8px;
         color: var(--text);
-        font-size: 28px;
+        font-size: 27px;
         font-weight: 750;
-        letter-spacing: -.6px;
+        letter-spacing: -.5px;
     }
 
-    .history-header p {
-        max-width: 580px;
+    .history-header p,
+    .history-card-header p {
         margin: 0;
         color: var(--muted);
-        font-size: 13px;
+        font-size: 12px;
         line-height: 1.7;
     }
 
-    .history-header-actions {
+    .history-header-actions,
+    .history-actions {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 9px;
+        gap: 8px;
     }
 
     .history-btn {
@@ -69,28 +73,28 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        min-height: 40px;
-        padding: 9px 14px;
+        min-height: 39px;
+        padding: 9px 13px;
         border: 1px solid transparent;
-        border-radius: 9px;
+        border-radius: 8px;
         font-family: inherit;
         font-size: 12px;
         font-weight: 700;
         text-decoration: none;
         white-space: nowrap;
         cursor: pointer;
-        transition: background .2s ease, border-color .2s ease;
+        transition: .2s ease;
     }
 
     .history-btn:disabled {
         cursor: not-allowed;
-        opacity: .7;
+        opacity: .65;
     }
 
     .history-btn-orange {
         color: #fff;
-        background: #ea580c;
-        border-color: #ea580c;
+        background: var(--orange);
+        border-color: var(--orange);
     }
 
     .history-btn-orange:hover {
@@ -101,44 +105,30 @@
 
     .history-btn-blue {
         color: #fff;
-        background: #2563eb;
-        border-color: #2563eb;
-    }
-
-    .history-btn-blue:hover {
-        color: #fff;
-        background: #1d4ed8;
-        border-color: #1d4ed8;
+        background: var(--blue);
+        border-color: var(--blue);
     }
 
     .history-btn-green {
         color: #fff;
-        background: #16a34a;
-        border-color: #16a34a;
+        background: var(--green);
+        border-color: var(--green);
     }
 
     .history-btn-green:hover {
         color: #fff;
         background: #15803d;
-        border-color: #15803d;
     }
 
-    .history-btn-red,
-    .history-btn-red:focus,
-    .history-btn-red:active {
+    .history-btn-red {
         color: #fff !important;
-        background: #dc2626 !important;
-        border: 1px solid #dc2626 !important;
+        background: var(--red) !important;
+        border-color: var(--red) !important;
     }
 
     .history-btn-red:hover {
-        color: #fff !important;
         background: #b91c1c !important;
         border-color: #b91c1c !important;
-    }
-
-    .history-btn-red:focus-visible {
-        box-shadow: 0 0 0 3px rgba(220, 38, 38, .2);
     }
 
     .history-btn-light {
@@ -156,7 +146,7 @@
     .history-summary {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
+        gap: 15px;
         margin-bottom: 22px;
     }
 
@@ -165,84 +155,61 @@
         align-items: center;
         gap: 14px;
         min-width: 0;
-        padding: 20px;
-        overflow: hidden;
+        padding: 19px;
         background: #fff;
         border: 1px solid var(--border);
-        border-radius: 13px;
-    }
-
-    .history-summary-card::after {
-        display: none !important;
-        content: none !important;
+        border-radius: 12px;
     }
 
     .history-summary-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 46px;
-        height: 46px;
+        display: grid;
+        place-items: center;
+        width: 45px;
+        height: 45px;
         flex-shrink: 0;
-        color: var(--summary-color, var(--orange));
-        background: var(--summary-bg, var(--orange-light));
-        border-radius: 12px;
-        font-size: 20px;
+        color: var(--summary-color);
+        background: var(--summary-bg);
+        border-radius: 10px;
+        font-size: 19px;
     }
 
     .history-summary-info small {
         display: block;
         margin-bottom: 5px;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .history-summary-info strong {
-        display: block;
         color: var(--text);
-        font-size: 24px;
+        font-size: 23px;
         font-weight: 750;
-        line-height: 1.2;
     }
 
     .history-card {
         overflow: hidden;
         background: #fff;
         border: 1px solid var(--border);
-        border-radius: 13px;
+        border-radius: 12px;
     }
 
     .history-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 15px;
-        padding: 20px 22px;
+        padding: 19px 22px;
         border-bottom: 1px solid var(--border);
     }
 
     .history-card-header h2 {
         margin: 0 0 5px;
         color: var(--text);
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 750;
-    }
-
-    .history-card-header p {
-        margin: 0;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.6;
     }
 
     .history-filters {
         display: grid;
-        grid-template-columns: minmax(220px, 1.6fr)
-                               minmax(150px, .8fr)
-                               minmax(150px, .8fr)
-                               auto;
-        gap: 11px;
-        padding: 18px 22px;
+        grid-template-columns: minmax(220px, 1.6fr) minmax(140px, .8fr) minmax(140px, .8fr) auto;
+        gap: 10px;
+        padding: 17px 22px;
         border-bottom: 1px solid var(--border);
     }
 
@@ -255,18 +222,18 @@
         position: absolute;
         top: 50%;
         left: 12px;
-        z-index: 1;
         color: #9ca3af;
-        font-size: 14px;
+        font-size: 13px;
         pointer-events: none;
         transform: translateY(-50%);
     }
 
     .history-filter-control input,
-    .history-filter-control select {
+    .history-filter-control select,
+    .history-form-control {
         width: 100%;
-        height: 41px;
-        padding: 0 12px;
+        min-height: 41px;
+        padding: 9px 12px;
         color: #111827;
         background: #fff;
         border: 1px solid #d1d5db;
@@ -292,21 +259,16 @@
         align-items: center;
         justify-content: center;
         gap: 7px;
-        height: 41px;
-        padding: 0 14px;
+        min-height: 41px;
+        padding: 0 13px;
         color: #374151;
         background: #fff;
         border: 1px solid #d1d5db;
         border-radius: 8px;
         font-family: inherit;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
-        white-space: nowrap;
         cursor: pointer;
-    }
-
-    .history-reset-btn:hover {
-        background: #f9fafb;
     }
 
     .history-edit-panel {
@@ -314,8 +276,7 @@
         overflow: hidden;
         background: #fff;
         border: 1px solid #bbf7d0;
-        border-radius: 13px;
-        box-shadow: 0 4px 15px rgba(22, 163, 74, .06);
+        border-radius: 12px;
         scroll-margin-top: 24px;
     }
 
@@ -323,58 +284,55 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 17px 20px;
+        padding: 16px 19px;
         background: #f0fdf4;
         border-bottom: 1px solid #bbf7d0;
     }
 
     .history-edit-panel-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: grid;
+        place-items: center;
         width: 40px;
         height: 40px;
         flex-shrink: 0;
         color: #15803d;
         background: #dcfce7;
-        border-radius: 10px;
-        font-size: 18px;
+        border-radius: 9px;
+        font-size: 17px;
     }
 
     .history-edit-panel-header h3 {
         margin: 0 0 4px;
         color: #166534;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 750;
     }
 
     .history-edit-panel-header p {
         margin: 0;
         color: #4b7b5b;
-        font-size: 12px;
-        line-height: 1.5;
+        font-size: 11px;
     }
 
     .history-edit-panel-body {
-        padding: 22px;
+        padding: 21px;
     }
 
     .history-edit-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
+        gap: 17px;
     }
 
     .history-form-group {
         min-width: 0;
-        margin: 0;
     }
 
     .history-form-group label {
         display: block;
         margin-bottom: 7px;
         color: #374151;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
     }
 
@@ -383,26 +341,12 @@
     }
 
     .history-form-control {
-        display: block;
-        width: 100%;
         min-height: 42px;
-        padding: 10px 12px;
-        color: #111827;
-        background: #fff;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        outline: none;
-        font-family: inherit;
-        font-size: 13px;
-        transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .history-form-control::placeholder {
-        color: #9ca3af;
+        font-size: 12px;
     }
 
     textarea.history-form-control {
-        min-height: 90px;
+        min-height: 85px;
         resize: vertical;
     }
 
@@ -414,16 +358,16 @@
         display: block;
         margin-top: 6px;
         color: #9ca3af;
-        font-size: 11px;
-        line-height: 1.5;
+        font-size: 10px;
     }
 
-    .history-edit-panel-footer {
+    .history-edit-panel-footer,
+    .history-modal .modal-footer {
         display: flex;
         justify-content: flex-end;
         flex-wrap: wrap;
-        gap: 9px;
-        padding: 15px 22px;
+        gap: 8px;
+        padding: 14px 21px;
         background: #f9fafb;
         border-top: 1px solid var(--border);
     }
@@ -435,32 +379,28 @@
 
     .history-table {
         width: 100%;
-        min-width: 1100px;
+        min-width: 1050px;
         border-collapse: collapse;
     }
 
     .history-table th {
-        padding: 14px 16px;
+        padding: 13px 15px;
         color: #6b7280;
         background: #f9fafb;
         border-bottom: 1px solid var(--border);
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 750;
         text-align: left;
         white-space: nowrap;
     }
 
     .history-table td {
-        padding: 15px 16px;
+        padding: 14px 15px;
         color: #374151;
         border-bottom: 1px solid #f1f5f9;
-        font-size: 12px;
+        font-size: 11px;
         vertical-align: middle;
         white-space: nowrap;
-    }
-
-    .history-table tbody tr {
-        transition: background .15s ease;
     }
 
     .history-table tbody tr:hover {
@@ -468,7 +408,7 @@
     }
 
     .history-table tbody tr:last-child td {
-        border-bottom: none;
+        border-bottom: 0;
     }
 
     .history-number {
@@ -478,25 +418,19 @@
 
     .history-plate {
         display: inline-flex;
-        align-items: center;
         padding: 6px 9px;
         color: #1e40af;
         background: #eff6ff;
         border: 1px solid #bfdbfe;
         border-radius: 6px;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 800;
-        letter-spacing: .3px;
     }
 
-    .history-vehicle-type {
-        color: #374151;
-        font-weight: 600;
-    }
-
+    .history-vehicle-type,
     .history-driver-name {
-        color: #111827;
-        font-weight: 700;
+        color: #374151;
+        font-weight: 650;
     }
 
     .history-purpose {
@@ -511,18 +445,18 @@
 
     .history-time-date {
         color: #374151;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 700;
     }
 
     .history-time-hour {
         color: #9ca3af;
-        font-size: 11px;
+        font-size: 10px;
     }
 
     .history-officer {
         color: #4b5563;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
     }
 
@@ -534,7 +468,6 @@
         border-radius: 20px;
         font-size: 10px;
         font-weight: 750;
-        white-space: nowrap;
     }
 
     .history-status::before {
@@ -555,24 +488,17 @@
         background: #f0fdf4;
     }
 
-    .history-actions {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
     .history-action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
+        display: inline-grid;
+        place-items: center;
+        width: 31px;
+        height: 31px;
         padding: 0;
         border: 1px solid transparent;
-        border-radius: 8px;
-        font-size: 14px;
+        border-radius: 7px;
+        font-size: 13px;
         cursor: pointer;
-        transition: background .2s ease, color .2s ease;
+        transition: .2s ease;
     }
 
     .history-action-detail {
@@ -584,7 +510,6 @@
     .history-action-detail:hover {
         color: #fff;
         background: #2563eb;
-        border-color: #2563eb;
     }
 
     .history-action-edit {
@@ -596,7 +521,6 @@
     .history-action-edit:hover {
         color: #fff;
         background: #16a34a;
-        border-color: #16a34a;
     }
 
     .history-action-delete {
@@ -608,73 +532,66 @@
     .history-action-delete:hover {
         color: #fff;
         background: #dc2626;
-        border-color: #dc2626;
     }
 
     .history-empty {
-        padding: 48px 20px !important;
+        padding: 45px 20px !important;
         text-align: center;
         white-space: normal !important;
     }
 
     .history-empty-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 58px;
-        height: 58px;
-        margin: 0 auto 14px;
+        display: grid;
+        place-items: center;
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 13px;
         color: #9ca3af;
         background: #f3f4f6;
-        border-radius: 16px;
-        font-size: 25px;
+        border-radius: 13px;
+        font-size: 23px;
     }
 
     .history-empty h3 {
-        margin: 0 0 7px;
+        margin: 0 0 6px;
         color: #374151;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 750;
     }
 
     .history-empty p {
         margin: 0;
         color: #9ca3af;
-        font-size: 12px;
+        font-size: 11px;
         line-height: 1.6;
     }
 
     .history-result-info {
-        padding: 14px 22px;
+        padding: 13px 22px;
         color: #9ca3af;
         border-top: 1px solid var(--border);
-        font-size: 11px;
+        font-size: 10px;
     }
 
-    /* TOMBOL LIHAT SEMUA - SEDERHANA DAN RATA KANAN */
     .history-view-all-wrap {
         display: flex;
-        align-items: center;
         justify-content: flex-end;
-        padding: 12px 22px;
+        padding: 11px 22px;
         border-top: 1px solid var(--border);
     }
 
     .history-view-all-wrap .history-btn {
-        min-height: 34px;
-        padding: 7px 11px;
+        min-height: 33px;
+        padding: 6px 10px;
         color: #6b7280;
         background: transparent;
-        border: 1px solid #e5e7eb;
-        border-radius: 7px;
-        font-size: 11px;
-        font-weight: 600;
+        border-color: #e5e7eb;
+        font-size: 10px;
     }
 
     .history-view-all-wrap .history-btn:hover {
         color: #374151;
         background: #f9fafb;
-        border-color: #d1d5db;
     }
 
     .history-modal .modal-dialog {
@@ -686,7 +603,7 @@
         overflow: hidden;
         background: #fff;
         border: 1px solid #e5e7eb;
-        border-radius: 14px;
+        border-radius: 13px;
         box-shadow: 0 20px 55px rgba(15, 23, 42, .16);
     }
 
@@ -694,137 +611,124 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 19px 22px;
+        padding: 18px 21px;
         border-bottom: 1px solid #e5e7eb;
     }
 
     .history-modal-heading {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 11px;
         min-width: 0;
     }
 
     .history-modal-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 42px;
-        height: 42px;
+        display: grid;
+        place-items: center;
+        width: 41px;
+        height: 41px;
         flex-shrink: 0;
         color: #2563eb;
         background: #eff6ff;
-        border-radius: 11px;
-        font-size: 19px;
+        border-radius: 10px;
+        font-size: 18px;
     }
 
     .history-modal-heading h5 {
         margin: 0 0 4px;
         color: #111827;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 750;
     }
 
     .history-modal-heading p {
         margin: 0;
         color: #6b7280;
-        font-size: 11px;
-        line-height: 1.5;
+        font-size: 10px;
     }
 
     .history-modal .modal-body {
-        padding: 22px;
+        padding: 21px;
     }
 
     .history-detail-profile {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 18px;
-        padding: 16px;
+        gap: 13px;
+        margin-bottom: 17px;
+        padding: 15px;
         background: #eff6ff;
         border: 1px solid #dbeafe;
-        border-radius: 11px;
+        border-radius: 10px;
     }
 
     .history-detail-profile-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 48px;
-        height: 48px;
+        display: grid;
+        place-items: center;
+        width: 46px;
+        height: 46px;
         flex-shrink: 0;
         color: #2563eb;
         background: #dbeafe;
-        border-radius: 12px;
-        font-size: 22px;
+        border-radius: 11px;
+        font-size: 21px;
     }
 
     .history-detail-plate {
         margin-bottom: 5px;
         color: #1e3a8a;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 800;
     }
 
     .history-detail-driver {
         color: #64748b;
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .history-detail-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
+        gap: 11px;
     }
 
     .history-detail-item {
         min-width: 0;
-        padding: 14px;
+        padding: 13px;
         overflow-wrap: anywhere;
         background: #fff;
         border: 1px solid #e5e7eb;
-        border-radius: 10px;
+        border-radius: 9px;
     }
 
     .history-detail-label {
         display: block;
         margin-bottom: 7px;
         color: #9ca3af;
-        font-size: 10px;
+        font-size: 9px;
     }
 
     .history-detail-value {
         color: #111827;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         line-height: 1.6;
         white-space: pre-wrap;
     }
 
-    .history-modal .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 15px 22px;
-        background: #f9fafb;
-        border-top: 1px solid #e5e7eb;
-    }
-
     .history-delete-warning {
-        padding: 16px;
+        padding: 15px;
         color: #991b1b;
         background: #fef2f2;
         border: 1px solid #fecaca;
-        border-radius: 10px;
-        font-size: 12px;
+        border-radius: 9px;
+        font-size: 11px;
         line-height: 1.8;
     }
 
-    .history-delete-warning > i {
+    .history-delete-warning i {
         margin-right: 6px;
-        font-size: 16px;
+        font-size: 15px;
     }
 
     /* DARK MODE */
@@ -835,7 +739,8 @@
     body.dark-mode .history-header h1,
     body.dark-mode .history-summary-info strong,
     body.dark-mode .history-card-header h2,
-    body.dark-mode .history-driver-name {
+    body.dark-mode .history-driver-name,
+    body.dark-mode .history-vehicle-type {
         color: #f9fafb;
     }
 
@@ -851,6 +756,15 @@
         border-color: #374151;
     }
 
+    body.dark-mode .history-card-header,
+    body.dark-mode .history-filters,
+    body.dark-mode .history-edit-panel-footer,
+    body.dark-mode .history-result-info,
+    body.dark-mode .history-view-all-wrap {
+        background: #111827;
+        border-color: #374151;
+    }
+
     body.dark-mode .history-edit-panel-header {
         background: #052e16;
         border-color: #166534;
@@ -862,15 +776,6 @@
 
     body.dark-mode .history-edit-panel-header p {
         color: #86efac;
-    }
-
-    body.dark-mode .history-edit-panel-footer,
-    body.dark-mode .history-card-header,
-    body.dark-mode .history-filters,
-    body.dark-mode .history-result-info,
-    body.dark-mode .history-view-all-wrap {
-        background: #111827;
-        border-color: #374151;
     }
 
     body.dark-mode .history-filter-control input,
@@ -900,7 +805,6 @@
         background: #1f2937;
     }
 
-    body.dark-mode .history-vehicle-type,
     body.dark-mode .history-time-date,
     body.dark-mode .history-officer {
         color: #e5e7eb;
@@ -919,17 +823,16 @@
 
     body.dark-mode .history-view-all-wrap .history-btn {
         color: #d1d5db;
-        background: transparent;
         border-color: #4b5563;
     }
 
     body.dark-mode .history-view-all-wrap .history-btn:hover {
         color: #fff;
         background: #1f2937;
-        border-color: #6b7280;
     }
 
-    body.dark-mode .history-modal .modal-content {
+    body.dark-mode .history-modal .modal-content,
+    body.dark-mode .history-modal .modal-body {
         background: #111827;
         border-color: #374151;
     }
@@ -943,10 +846,6 @@
     body.dark-mode .history-modal-heading h5,
     body.dark-mode .history-detail-value {
         color: #f9fafb;
-    }
-
-    body.dark-mode .history-modal .modal-body {
-        background: #111827;
     }
 
     body.dark-mode .history-detail-item {
@@ -971,20 +870,12 @@
         .history-filters {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
-
-        .history-summary {
-            gap: 12px;
-        }
-
-        .history-summary-card {
-            padding: 16px;
-        }
     }
 
     @media (max-width: 760px) {
         .history-header {
             flex-direction: column;
-            gap: 15px;
+            align-items: stretch;
         }
 
         .history-header-actions {
@@ -996,17 +887,14 @@
         }
 
         .history-summary {
-            grid-template-columns: 1fr;
+            gap: 10px;
         }
 
         .history-summary-card {
-            padding: 17px;
+            padding: 15px;
         }
 
-        .history-card-header {
-            padding: 17px;
-        }
-
+        .history-card-header,
         .history-filters {
             padding: 16px;
         }
@@ -1016,11 +904,7 @@
         }
 
         .history-edit-panel-body {
-            padding: 17px;
-        }
-
-        .history-edit-panel-footer {
-            padding: 14px 17px;
+            padding: 16px;
         }
 
         .history-detail-grid {
@@ -1030,7 +914,7 @@
 
     @media (max-width: 520px) {
         .history-header h1 {
-            font-size: 24px;
+            font-size: 23px;
         }
 
         .history-header-actions {
@@ -1038,13 +922,9 @@
             align-items: stretch;
         }
 
-        .history-header-actions .history-btn {
-            width: 100%;
-            flex: none;
-        }
-
         .history-filters,
-        .history-edit-grid {
+        .history-edit-grid,
+        .history-summary {
             grid-template-columns: 1fr;
         }
 
@@ -1052,17 +932,9 @@
             grid-column: auto;
         }
 
-        .history-edit-panel-header {
-            align-items: flex-start;
-            padding: 15px;
-        }
-
-        .history-edit-panel-body {
-            padding: 15px;
-        }
-
         .history-edit-panel-footer {
             flex-direction: column-reverse;
+            padding: 14px 16px;
         }
 
         .history-edit-panel-footer .history-btn {
@@ -1080,7 +952,7 @@
         }
 
         .history-modal .modal-footer {
-            padding: 14px 16px;
+            padding: 13px 16px;
         }
 
         .history-detail-grid {
@@ -1092,20 +964,23 @@
         }
 
         .history-view-all-wrap {
-            padding: 12px 16px;
+            padding: 11px 16px;
         }
     }
 </style>
 
-<div class="history-page">
+<div class="history-page"
+     id="historyPage"
+     data-gate-logs-url="{{ url('/gate-logs') }}"
+     data-show-all="{{ $showAllHistory ? '1' : '0' }}">
 
     {{-- HEADER --}}
     <div class="history-header">
         <div>
             <h1>Riwayat Kendaraan</h1>
             <p>
-                Kelola dan pantau seluruh catatan kendaraan yang masuk dan
-                keluar melalui Gate Utama area wisata.
+                Kelola dan pantau catatan kendaraan yang masuk dan keluar
+                melalui Gate Utama area wisata.
             </p>
         </div>
 
@@ -1162,7 +1037,6 @@
 
     {{-- DAFTAR RIWAYAT --}}
     <div class="history-card">
-
         <div class="history-card-header">
             <div>
                 <h2>Daftar Riwayat Kendaraan</h2>
@@ -1203,19 +1077,14 @@
         </div>
 
         {{-- FORM EDIT --}}
-        <section class="history-edit-panel"
-                 id="historyEditPanel"
-                 hidden>
-
+        <section class="history-edit-panel" id="historyEditPanel" hidden>
             <div class="history-edit-panel-header">
                 <div class="history-edit-panel-icon">
                     <i class="bi bi-pencil-square"></i>
                 </div>
                 <div>
                     <h3>Edit Riwayat Kendaraan</h3>
-                    <p>
-                        Perbarui informasi kendaraan melalui formulir berikut.
-                    </p>
+                    <p>Perbarui informasi kendaraan melalui formulir berikut.</p>
                 </div>
             </div>
 
@@ -1227,7 +1096,6 @@
 
                 <div class="history-edit-panel-body">
                     <div class="history-edit-grid">
-
                         <div class="history-form-group">
                             <label for="editHistoryPlate">
                                 Plat Nomor <span class="history-required">*</span>
@@ -1291,7 +1159,6 @@
                                 Kosongkan jika tidak ada catatan tambahan.
                             </span>
                         </div>
-
                     </div>
                 </div>
 
@@ -1426,7 +1293,6 @@
 
                             <td>
                                 <div class="history-actions">
-
                                     <button type="button"
                                             class="history-action-btn history-action-detail"
                                             title="Lihat Detail"
@@ -1468,7 +1334,6 @@
                                             data-plate="{{ $plateNumber }}">
                                         <i class="bi bi-trash3"></i>
                                     </button>
-
                                 </div>
                             </td>
                         </tr>
@@ -1493,9 +1358,7 @@
                                 <i class="bi bi-search"></i>
                             </div>
                             <h3>Data Tidak Ditemukan</h3>
-                            <p>
-                                Coba ubah kata kunci atau reset filter pencarian.
-                            </p>
+                            <p>Ubah kata kunci atau reset filter pencarian.</p>
                         </td>
                     </tr>
                 </tbody>
@@ -1507,12 +1370,11 @@
             riwayat kendaraan.
         </div>
 
-        {{-- TOMBOL LIHAT SEMUA --}}
+        {{-- LIHAT SEMUA --}}
         @if($historyTotal > 10)
             <div class="history-view-all-wrap">
                 @if($showAllHistory)
-                    <a href="{{ route('history.index') }}"
-                       class="history-btn">
+                    <a href="{{ route('history.index') }}" class="history-btn">
                         <i class="bi bi-chevron-up"></i>
                         Tampilkan 10 Data
                     </a>
@@ -1543,16 +1405,13 @@
 
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-
             <div class="modal-header">
                 <div class="history-modal-heading">
                     <div class="history-modal-icon">
                         <i class="bi bi-car-front"></i>
                     </div>
                     <div>
-                        <h5 id="historyDetailModalTitle">
-                            Detail Riwayat Kendaraan
-                        </h5>
+                        <h5 id="historyDetailModalTitle">Detail Riwayat Kendaraan</h5>
                         <p>Informasi lengkap aktivitas kendaraan.</p>
                     </div>
                 </div>
@@ -1629,12 +1488,11 @@
                     Tutup
                 </button>
             </div>
-
         </div>
     </div>
 </div>
 
-{{-- MODAL KONFIRMASI HAPUS --}}
+{{-- MODAL HAPUS --}}
 <div class="modal fade history-modal"
      id="historyDeleteModal"
      tabindex="-1"
@@ -1642,10 +1500,7 @@
      aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered">
-        <form id="historyDeleteForm"
-              method="POST"
-              class="modal-content">
-
+        <form id="historyDeleteForm" method="POST" class="modal-content">
             @csrf
             @method('DELETE')
 
@@ -1657,11 +1512,8 @@
                          style="color:#dc2626;background:#fef2f2;">
                         <i class="bi bi-trash3"></i>
                     </div>
-
                     <div>
-                        <h5 id="historyDeleteModalTitle">
-                            Hapus Riwayat Kendaraan
-                        </h5>
+                        <h5 id="historyDeleteModalTitle">Hapus Riwayat Kendaraan</h5>
                         <p>Periksa kembali data sebelum menghapus.</p>
                     </div>
                 </div>
@@ -1695,44 +1547,51 @@
                     Ya, Hapus
                 </button>
             </div>
-
         </form>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const baseGateLogsUrl = @json(url('/gate-logs'));
+    const page = document.getElementById('historyPage');
 
-    /* HELPER */
-    function setText(id, value) {
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.textContent = value || '-';
-        }
+    if (!page) {
+        return;
     }
 
-    function getModal(elementId) {
-        const element = document.getElementById(elementId);
-
-        if (!element || typeof bootstrap === 'undefined') {
-            return null;
-        }
-
-        return bootstrap.Modal.getOrCreateInstance(element);
-    }
-
-    const detailModal = getModal('historyDetailModal');
-    const deleteModal = getModal('historyDeleteModal');
+    // Nilai dari Blade dibaca melalui atribut HTML, bukan @json di JavaScript.
+    const baseGateLogsUrl = page.dataset.gateLogsUrl;
+    const showAll = page.dataset.showAll === '1';
 
     const editPanel = document.getElementById('historyEditPanel');
     const editForm = document.getElementById('historyEditForm');
     const deleteForm = document.getElementById('historyDeleteForm');
 
-    const cancelEditButton = document.getElementById('cancelHistoryEdit');
     const saveButton = document.getElementById('saveHistoryEdit');
-    const deleteSubmitButton = document.getElementById('deleteHistorySubmit');
+    const deleteButton = document.getElementById('deleteHistorySubmit');
+
+    const detailModalElement = document.getElementById('historyDetailModal');
+    const deleteModalElement = document.getElementById('historyDeleteModal');
+
+    const detailModal = (
+        detailModalElement && window.bootstrap
+    ) ? bootstrap.Modal.getOrCreateInstance(detailModalElement) : null;
+
+    const deleteModal = (
+        deleteModalElement && window.bootstrap
+    ) ? bootstrap.Modal.getOrCreateInstance(deleteModalElement) : null;
+
+    function getElement(id) {
+        return document.getElementById(id);
+    }
+
+    function setText(id, value) {
+        const element = getElement(id);
+
+        if (element) {
+            element.textContent = value || '-';
+        }
+    }
 
     function resetSaveButton() {
         if (!saveButton) return;
@@ -1743,10 +1602,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function resetDeleteButton() {
-        if (!deleteSubmitButton) return;
+        if (!deleteButton) return;
 
-        deleteSubmitButton.disabled = false;
-        deleteSubmitButton.innerHTML =
+        deleteButton.disabled = false;
+        deleteButton.innerHTML =
             '<i class="bi bi-trash3"></i> Ya, Hapus';
     }
 
@@ -1758,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', function () {
         resetDeleteButton();
     });
 
-    /* EDIT RIWAYAT */
+    // EDIT RIWAYAT
     document.querySelectorAll('[data-history-edit]').forEach(function (button) {
         button.addEventListener('click', function () {
             const data = this.dataset;
@@ -1770,19 +1629,19 @@ document.addEventListener('DOMContentLoaded', function () {
             editForm.action =
                 baseGateLogsUrl + '/' + encodeURIComponent(data.id);
 
-            document.getElementById('editHistoryPlate').value =
+            getElement('editHistoryPlate').value =
                 data.plate === '-' ? '' : (data.plate || '');
 
-            document.getElementById('editHistoryType').value =
+            getElement('editHistoryType').value =
                 data.type === '-' ? '' : (data.type || '');
 
-            document.getElementById('editHistoryDriver').value =
+            getElement('editHistoryDriver').value =
                 data.driver === '-' ? '' : (data.driver || '');
 
-            document.getElementById('editHistoryPurpose').value =
+            getElement('editHistoryPurpose').value =
                 data.purpose === '-' ? '' : (data.purpose || '');
 
-            document.getElementById('editHistoryNotes').value =
+            getElement('editHistoryNotes').value =
                 data.notes === '-' ? '' : (data.notes || '');
 
             editPanel.hidden = false;
@@ -1793,14 +1652,16 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             window.setTimeout(function () {
-                document.getElementById('editHistoryPlate').focus({
+                getElement('editHistoryPlate').focus({
                     preventScroll: true
                 });
             }, 250);
         });
     });
 
-    /* BATAL EDIT */
+    // BATAL EDIT
+    const cancelEditButton = getElement('cancelHistoryEdit');
+
     if (cancelEditButton && editPanel && editForm) {
         cancelEditButton.addEventListener('click', function () {
             editForm.reset();
@@ -1810,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* DETAIL RIWAYAT */
+    // DETAIL RIWAYAT
     document.querySelectorAll('[data-history-detail]').forEach(function (button) {
         button.addEventListener('click', function () {
             const data = this.dataset;
@@ -1833,7 +1694,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /* HAPUS RIWAYAT */
+    // HAPUS RIWAYAT
     document.querySelectorAll('[data-history-delete]').forEach(function (button) {
         button.addEventListener('click', function () {
             const data = this.dataset;
@@ -1853,13 +1714,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /* FILTER PENCARIAN */
-    const searchInput = document.getElementById('historySearch');
-    const statusFilter = document.getElementById('historyStatus');
-    const dateFilter = document.getElementById('historyDate');
-    const resetButton = document.getElementById('resetHistoryFilter');
-    const resultInfo = document.getElementById('historyResultInfo');
-    const noResultsRow = document.getElementById('historyNoResults');
+    // FILTER RIWAYAT
+    const searchInput = getElement('historySearch');
+    const statusFilter = getElement('historyStatus');
+    const dateFilter = getElement('historyDate');
+    const resetFilterButton = getElement('resetHistoryFilter');
+    const resultInfo = getElement('historyResultInfo');
+    const noResultsRow = getElement('historyNoResults');
 
     const rows = Array.from(
         document.querySelectorAll('.history-row')
@@ -1867,55 +1728,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const initialLimit = 10;
 
-    // Status awal mengikuti parameter URL ?all=1
-    let isShowingAll = @json($showAllHistory);
-
     function filterHistory() {
-        const keyword = (searchInput?.value || '')
-            .trim()
-            .toLowerCase();
-
+        const keyword = (searchInput?.value || '').trim().toLowerCase();
         const selectedStatus = statusFilter?.value || '';
         const selectedDate = dateFilter?.value || '';
-
-        let matchingRows = [];
-
-        rows.forEach(function (row) {
-            const rowText = row.textContent.toLowerCase();
-            const rowStatus = row.dataset.status || '';
-            const rowDate = row.dataset.date || '';
-
-            const matchesKeyword = rowText.includes(keyword);
-            const matchesStatus =
-                !selectedStatus || rowStatus === selectedStatus;
-            const matchesDate =
-                !selectedDate || rowDate === selectedDate;
-
-            if (matchesKeyword && matchesStatus && matchesDate) {
-                matchingRows.push(row);
-            }
-        });
 
         const hasActiveFilter =
             keyword !== '' ||
             selectedStatus !== '' ||
             selectedDate !== '';
 
-        // Saat filter digunakan, tampilkan semua hasil yang cocok.
-        const displayAll = isShowingAll || hasActiveFilter;
+        const matchingRows = rows.filter(function (row) {
+            const rowText = row.textContent.toLowerCase();
+            const rowStatus = row.dataset.status || '';
+            const rowDate = row.dataset.date || '';
 
-        matchingRows.forEach(function (row, index) {
-            row.hidden = !displayAll && index >= initialLimit;
+            return rowText.includes(keyword) &&
+                (!selectedStatus || rowStatus === selectedStatus) &&
+                (!selectedDate || rowDate === selectedDate);
         });
 
+        const displayAll = showAll || hasActiveFilter;
+
         rows.forEach(function (row) {
-            if (!matchingRows.includes(row)) {
-                row.hidden = true;
-            }
+            const matchIndex = matchingRows.indexOf(row);
+
+            row.hidden = matchIndex === -1 ||
+                (!displayAll && matchIndex >= initialLimit);
         });
 
         const matchingCount = matchingRows.length;
-
         const displayedCount = displayAll
             ? matchingCount
             : Math.min(initialLimit, matchingCount);
@@ -1945,8 +1787,8 @@ document.addEventListener('DOMContentLoaded', function () {
         dateFilter.addEventListener('change', filterHistory);
     }
 
-    if (resetButton) {
-        resetButton.addEventListener('click', function () {
+    if (resetFilterButton) {
+        resetFilterButton.addEventListener('click', function () {
             if (searchInput) searchInput.value = '';
             if (statusFilter) statusFilter.value = '';
             if (dateFilter) dateFilter.value = '';
@@ -1957,7 +1799,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     filterHistory();
 
-    /* SPINNER SIMPAN */
+    // TOMBOL SIMPAN
     if (editForm) {
         editForm.addEventListener('submit', function (event) {
             if (!editForm.checkValidity()) {
@@ -1975,17 +1817,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* SPINNER HAPUS */
+    // TOMBOL HAPUS
     if (deleteForm) {
         deleteForm.addEventListener('submit', function () {
-            if (deleteSubmitButton) {
-                deleteSubmitButton.disabled = true;
-                deleteSubmitButton.innerHTML =
+            if (deleteButton) {
+                deleteButton.disabled = true;
+                deleteButton.innerHTML =
                     '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Menghapus...';
             }
         });
     }
 });
 </script>
-
 @endsection

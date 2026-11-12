@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GateLog;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -12,109 +13,81 @@ class DashboardController extends Controller
      */
     public function index(): View
     {
-        // Jika akun Petugas membuka dashboard utama,
-        // tampilkan dashboard Petugas.
-        if (auth()->user()?->role === 'petugas') {
+        $user = Auth::user();
+
+        // Petugas diarahkan ke dashboard petugas.
+        if ($user?->role === 'petugas') {
             return view('dashboard.petugas', $this->getDashboardData());
         }
 
-        // Admin kembali ke mode Admin.
+        // Hapus mode petugas ketika admin kembali ke dashboard.
         session()->forget('mode_petugas');
 
-        $data = $this->getDashboardData();
-
-        return view('dashboard.index', $data);
+        return view('dashboard.index', $this->getDashboardData());
     }
 
     /**
-     * Mode Petugas.
-     *
-     * Admin dapat melihat tampilan dashboard petugas
-     * tanpa mengubah role akun yang sedang login.
+     * Dashboard mode petugas.
      */
     public function petugas(): View
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         abort_unless(
-            $user && in_array($user->role, ['admin', 'petugas']),
+            $user && in_array($user->role, ['admin', 'petugas'], true),
             403,
             'Anda tidak memiliki akses ke halaman ini.'
         );
 
-        // Tandai sesi jika Admin sedang menggunakan Mode Petugas.
+        // Aktifkan mode petugas untuk admin.
         if ($user->role === 'admin') {
             session(['mode_petugas' => true]);
         }
 
-        $data = $this->getDashboardData();
-
-        return view('dashboard.petugas', $data);
+        return view('dashboard.petugas', $this->getDashboardData());
     }
 
     /**
-     * Mengambil seluruh data yang diperlukan dashboard.
+     * Mengambil data dashboard.
      */
     private function getDashboardData(): array
     {
         $startOfDay = now()->startOfDay();
         $endOfDay = now()->endOfDay();
 
-        /*
-         * KENDARAAN MASUK HARI INI
-         *
-         * Data kendaraan diambil langsung dari tabel gate_logs.
-         */
+        // Kendaraan masuk hari ini.
         $todayEntries = GateLog::with('officer')
             ->whereBetween('gate_in', [$startOfDay, $endOfDay])
             ->latest('gate_in')
             ->get();
 
-        /*
-         * KENDARAAN KELUAR HARI INI
-         */
+        // Kendaraan keluar hari ini.
         $todayExits = GateLog::with('officer')
             ->whereNotNull('gate_out')
             ->whereBetween('gate_out', [$startOfDay, $endOfDay])
             ->latest('gate_out')
             ->get();
 
-        /*
-         * KENDARAAN YANG MASIH BERADA DI AREA WISATA
-         */
+        // Kendaraan yang masih berada di area wisata.
         $insideVehicles = GateLog::with('officer')
             ->where('status', 'Di Dalam')
             ->whereNull('gate_out')
             ->latest('gate_in')
             ->get();
 
-        /*
-         * STATISTIK UTAMA
-         */
+        // Statistik kendaraan.
         $totalEntry = $todayEntries->count();
         $totalExit = $todayExits->count();
-        $totalToday = $totalEntry;
         $totalInside = $insideVehicles->count();
 
-        /*
-         * AKTIVITAS TERKINI GATE UTAMA
-         *
-         * Menggunakan updated_at agar aktivitas kendaraan
-         * yang baru dicatat keluar ikut muncul sebagai aktivitas terbaru.
-         */
+        // Aktivitas gate terbaru.
         $recentGateLogs = GateLog::with('officer')
-            ->orderByRaw(
-                'COALESCE(updated_at, created_at) DESC'
-            )
+            ->orderByRaw('COALESCE(updated_at, created_at) DESC')
             ->orderByDesc('id')
-            ->take(7)
+            ->limit(7)
             ->get();
 
-        /*
-         * KOMPOSISI JENIS KENDARAAN
-         *
-         * Menggunakan kolom vehicle_type langsung.
-         */
+        // Komposisi jenis kendaraan.
         $vehicleTypeCounts = [];
 
         foreach ($insideVehicles as $log) {
@@ -131,17 +104,13 @@ class DashboardController extends Controller
         arsort($vehicleTypeCounts);
 
         $vehicleComposition = collect($vehicleTypeCounts)
-            ->map(function ($total, $name) {
-                return (object) [
-                    'name' => $name,
-                    'total' => $total,
-                ];
-            })
+            ->map(fn ($total, $name) => (object) [
+                'name' => $name,
+                'total' => $total,
+            ])
             ->values();
 
-        /*
-         * AKTIVITAS KENDARAAN BERDASARKAN WAKTU
-         */
+        // Grafik aktivitas kendaraan.
         $chartHours = [
             '07:00',
             '09:00',
@@ -161,27 +130,17 @@ class DashboardController extends Controller
 
             $entryCount = $todayEntries
                 ->filter(function ($log) use ($hourNumber, $nextHour) {
-                    if (!$log->gate_in) {
-                        return false;
-                    }
-
-                    $logHour = $log->gate_in->hour;
-
-                    return $logHour >= $hourNumber
-                        && $logHour < $nextHour;
+                    return $log->gate_in
+                        && $log->gate_in->hour >= $hourNumber
+                        && $log->gate_in->hour < $nextHour;
                 })
                 ->count();
 
             $exitCount = $todayExits
                 ->filter(function ($log) use ($hourNumber, $nextHour) {
-                    if (!$log->gate_out) {
-                        return false;
-                    }
-
-                    $logHour = $log->gate_out->hour;
-
-                    return $logHour >= $hourNumber
-                        && $logHour < $nextHour;
+                    return $log->gate_out
+                        && $log->gate_out->hour >= $hourNumber
+                        && $log->gate_out->hour < $nextHour;
                 })
                 ->count();
 
@@ -195,20 +154,15 @@ class DashboardController extends Controller
             ]);
         }
 
-        /*
-         * DATA TABEL KENDARAAN AKTIF
-         */
-        $vehicles = $insideVehicles;
-
         return [
             // Statistik.
-            'totalToday' => $totalToday,
+            'totalToday' => $totalEntry,
             'totalInside' => $totalInside,
             'totalEntry' => $totalEntry,
             'totalExit' => $totalExit,
 
             // Data kendaraan.
-            'vehicles' => $vehicles,
+            'vehicles' => $insideVehicles,
             'insideVehicles' => $insideVehicles,
             'todayEntries' => $todayEntries,
             'todayExits' => $todayExits,
